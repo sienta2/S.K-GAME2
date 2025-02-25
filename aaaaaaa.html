@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API Multiplayer Game</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+    </style>
+</head>
+<body>
+    <h1>Multiplayer Game</h1>
+    <button id="registerButton">Register Player</button>
+    <div id="playerStatus"></div>
+
+    <script>
+        let playerId = null;
+
+        // プレイヤーを登録する
+        document.getElementById('registerButton').addEventListener('click', async () => {
+            const response = await fetch('http://127.0.0.1:5000/register', { method: 'POST' });
+            const data = await response.json();
+            playerId = data.id;
+            document.getElementById('playerStatus').innerText = `Player registered with ID: ${playerId}`;
+        });
+
+        // プレイヤーの位置情報を取得する
+        async function getPlayerPosition() {
+            if (!playerId) return;
+            const response = await fetch(`http://127.0.0.1:5000/player/${playerId}`);
+            const data = await response.json();
+            document.getElementById('playerStatus').innerText = `Player Position: ${JSON.stringify(data.position)}`;
+        }
+
+        // プレイヤーの位置を更新する
+        async function updatePlayerPosition(newPosition) {
+            if (!playerId) return;
+            const response = await fetch(`http://127.0.0.1:5000/player/${playerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ position: newPosition })
+            });
+            const data = await response.json();
+            console.log(data.message);
+            getPlayerPosition();
+        }
+
+        // デモ用に位置を更新する
+        setInterval(() => {
+            if (playerId) {
+                const newPosition = { x: Math.random() * 100, y: Math.random() * 100, z: Math.random() * 100 };
+                updatePlayerPosition(newPosition);
+            }
+        }, 5000);  // 5秒ごとに位置を更新
+    </script>
+</body>
+</html>
